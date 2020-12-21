@@ -14,7 +14,7 @@ class Config(Base):
         self.TOKEN = None
         self.HOST = None
         self.PORT = None
-        self.LOGLEVEL = None
+        self.LOGLEVEL = self.__convert_loglevel("info")
 
         self.__build()
 

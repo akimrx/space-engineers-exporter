@@ -6,10 +6,14 @@ from client.vrage import VRageAPI
 
 config = Config("./config.yaml")
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=config.LOGLEVEL,
+    datefmt="%H:%M:%S",
+    format="%(asctime)s – %(levelname)s – %(message)s"
+)
 
 RESOURCES = (
-    # "session/players",
+    "session/players",
     # "session/planets",
     # "session/characters",
     # "session/grids",

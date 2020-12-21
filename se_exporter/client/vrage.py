@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
 import hmac
+import random
 import base64
 import hashlib
 import asyncio
 import aiohttp
 import logging
+
+from aiohttp.client_exceptions import (
+    ContentTypeError,
+)
 
 from wsgiref.handlers import format_date_time
 from datetime import datetime as dt
@@ -37,24 +42,24 @@ class VRageAPI(Base):
         if not isinstance(host, str):
             raise RuntimeError("Bad host format")
 
-        self.host = self._verify_host(host)
+        self.host = self.__verify_host(host)
         self.port = port
         self.token = token
         self.basepath = "/vrageremote/v1"
         self.endpoint = f"{self.host}:{self.port}{self.basepath}"
-        self.nonce = count(int(time()))
+        self.nonce = count(int(time() * random.randint(10, 100)))
         logger.debug(f"VRageAPI client ready: {self}")
 
-    def _verify_host(self, host: str):
+    def __verify_host(self, host: str):
         if not host.startswith("http://"):
             return f"http://{host}"
 
-    def _date(self):
+    def __date(self):
         return format_date_time(
             mktime(dt.now().timetuple())
         )
 
-    def _hash(self, uri: str, dtime: str):
+    def __hash(self, uri: str, dtime: str):
         nonce = str(next(self.nonce))
         salt = f"{uri}\r\n{nonce}\r\n{dtime}\r\n"
         token = base64.b64decode(self.token)
@@ -70,29 +75,55 @@ class VRageAPI(Base):
 
         return result
 
-    def _prepare_request(self, path: str):
+    def __prepare_request(self, path: str):
         if not path.startswith("/"):
             path = f"/{path}"
 
-        dtime = self._date()
+        dtime = self.__date()
         url = self.endpoint + path
 
         resource_fullpath = self.basepath + path
-        authorization = self._hash(resource_fullpath, dtime)
+        authorization = self.__hash(resource_fullpath, dtime)
         headers = dict(Date=dtime, Authorization=authorization)
 
         return url, headers
 
-    async def get_metric(self, name: str):
-        url, headers = self._prepare_request(name)
+    def __mapping(self, data: str):
+        gauge = (
+            "Asteroids", "Grids", "Planets", "BannedPlayers",
+            "Characters", "KickedPlayers", "FloatingObjects"
+        )
 
-        async with aiohttp.ClientSession() as session:
+        if not isinstance(data, dict):
+            return
+
+        resources = data.get("data")
+        if len(resources) < 1:
+            return
+
+        resource_name = list(resources.keys())[0]
+        if resource_name in gauge:
+            return {
+                resource_name: {
+                    "count": len(resources[resource_name]),
+                    "objects": resources[resource_name]
+                }
+            }
+        else:
+            return resources
+
+    async def get_metric(self, name: str):
+        url, headers = self.__prepare_request(name)
+
+        async with aiohttp.ClientSession(read_timeout=5, conn_timeout=3) as session:
             # , raise_for_status=True
             async with session.get(url, headers=headers) as response:
-                logger.debug(response.status)
-                result = await response.json()
-                return result
+                logger.debug(f"Request for {url} status: {response.status}")
+                try:
+                    result = await response.json()
+                except ContentTypeError:
+                    result = await response.text()
+                return self.__mapping(result)
 
     async def metrics(self):
         ...
-
