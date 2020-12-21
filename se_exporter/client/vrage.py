@@ -6,6 +6,7 @@ import base64
 import hashlib
 import asyncio
 import aiohttp
+import requests
 import logging
 
 from aiohttp.client_exceptions import (
@@ -112,12 +113,11 @@ class VRageAPI(Base):
         else:
             return resources
 
-    async def get_metric(self, name: str):
+    async def aioget_metric(self, name: str):
         url, headers = self.__prepare_request(name)
 
         async with aiohttp.ClientSession(read_timeout=5, conn_timeout=3) as session:
-            # , raise_for_status=True
-            async with session.get(url, headers=headers) as response:
+            async with session.get(url, headers=headers, raise_for_status=True) as response:
                 logger.debug(f"Request for {url} status: {response.status}")
                 try:
                     result = await response.json()
@@ -127,3 +127,13 @@ class VRageAPI(Base):
 
     async def metrics(self):
         ...
+
+
+    def get_metric(self, name: str):
+        url, headers = self.__prepare_request(name)
+
+        with requests.Session() as session:
+            response = session.get(url, headers=headers)
+            response.raise_for_status()
+
+            return self.__mapping(response.json())
