@@ -20,7 +20,7 @@ class Base(object):
         return self.__dict__[item]
 
     @classmethod
-    def de_json(cls, data, client: object = None):
+    def de_json(cls, data):
         """Deserialize object."""
         if not data:
             return None

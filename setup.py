@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 def readme():
@@ -45,7 +45,7 @@ def main():
             "console_scripts": [
                 "se-exporter=main.main"
             ]
-        }
+        },
         zip_safe=False
     )
 

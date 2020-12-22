@@ -12,6 +12,7 @@ help:
 	@echo "pep8 - check style with pep8"
 	@echo "black - check style with black"
 	@echo "lint - check style with pylint"
+	@echo "sort - sorting imports"
 
 clean: clean-build clean-pyc
 
@@ -36,7 +37,10 @@ lint:
 	pylint --rcfile=setup.cfg se_exporter
 
 black:
-	black .
+	black --check --color --diff -l 100 .
+
+sort:
+	isort .
 
 dist:
 	python3 setup.py sdist

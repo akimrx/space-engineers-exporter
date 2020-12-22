@@ -2,7 +2,6 @@
 """This module contains a Config for app."""
 
 import yaml
-
 from models.base import Base
 
 
@@ -10,13 +9,13 @@ class Config(Base):
 
     def __init__(self, filepath: str = None):
         self.filepath = filepath
-        self.TOKEN = None
-        self.HOST = None
-        self.PORT = None
-        self.LISTEN_ADDR = "0.0.0.0"
-        self.LISTEN_PORT = 9122
-        self.LOGLEVEL = "INFO"
-        self.RUN_ASYNC = False
+        self.token = None
+        self.host = None
+        self.port = None
+        self.listen_addr = "0.0.0.0"
+        self.listen_port = 9122
+        self.loglevel = "INFO"
+        self.run_async = False
 
         self.__build()
 
@@ -41,4 +40,4 @@ class Config(Base):
         for key, value in config.items():
             if key.lower() == "loglevel":
                 value = value.upper()
-            setattr(self, key.upper(), value)
+            setattr(self, key, value)

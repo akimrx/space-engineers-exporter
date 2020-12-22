@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 
-import hmac
-import random
+import asyncio
 import base64
 import hashlib
-import asyncio
-import aiohttp
-import requests
+import hmac
 import logging
-
-from wsgiref.handlers import format_date_time
+import random
 from datetime import datetime as dt
 from itertools import count
-from time import time, mktime
-from typing import List, Dict, Tuple, Optional
+from time import mktime, time
+from typing import Dict, List, Optional, Tuple
+from wsgiref.handlers import format_date_time
 
+import aiohttp
+import requests
 from models.base import Base
 from utils.helpers import universal_obj_hook
 
@@ -108,11 +107,15 @@ class VRageAPI(Base):
 
         return url, headers
 
-    def __mapping(self, data: str) -> [Optional[Metric], Optional[List]]:
+    def __mapping(self, data: dict) -> [Optional[Metric], Optional[List]]:
         if data is None or not isinstance(data, dict):
             return
 
         players = []
+        if len(data) > 1:
+            logger.warning(f"Unhandled metrics received, {data}")
+            return
+
         for name, value in data.items():
             if isinstance(value, list):
                 if name == "players" and len(value) > 0:

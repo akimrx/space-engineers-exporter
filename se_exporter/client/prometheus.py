@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """This module contains SpaceEngineersCollector and SpaceEngineersExporter classes."""
 
-import time
 import logging
+import time
 
-from prometheus_client import Summary, start_wsgi_server
-from prometheus_client.core import GaugeMetricFamily, REGISTRY
-
-from models.base import Base
 from client.vrage import VRageAPI
+from models.base import Base
+from prometheus_client import Summary, start_wsgi_server
+from prometheus_client.core import REGISTRY, GaugeMetricFamily
 
 logger = logging.getLogger(__name__)
 

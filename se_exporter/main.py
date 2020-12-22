@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
-import logging
 import argparse
-
-from utils.config import Config
-from client.vrage import VRageAPI
+import logging
 
 from client.prometheus import SpaceEngineersExporter
+from client.vrage import VRageAPI
+from utils.config import Config
 
 parser = argparse.ArgumentParser(
     prog="space-engineers-exporter",
@@ -88,7 +87,7 @@ args = parser.parse_args()
 config = Config(args.config)
 
 logging.basicConfig(
-    level=args.loglevel or config.LOGLEVEL,
+    level=args.loglevel or config.loglevel,
     datefmt="%d/%m/%Y %H:%M:%S",
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
@@ -97,16 +96,16 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     client = VRageAPI(
-        host=args.host or config.HOST,
-        token=args.token or config.TOKEN,
-        port=args.port or config.PORT,
-        run_async=args.run_async or config.RUN_ASYNC
+        host=args.host or config.host,
+        token=args.token or config.token,
+        port=args.port or config.port,
+        run_async=args.run_async or config.run_async
     )
 
     exporter = SpaceEngineersExporter(vrage_client=client)
     exporter.run(
-        addr=args.listen_addr or config.LISTEN_ADDR,
-        port=args.listen_port or config.LISTEN_PORT
+        addr=args.listen_addr or config.listen_addr,
+        port=args.listen_port or config.listen_port
     )
 
 

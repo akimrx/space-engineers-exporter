@@ -16,7 +16,7 @@ def universal_obj_hook(obj: [list, dict]):
             result.append(_object_hook(i))
         return result
 
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return _object_hook(obj)
 
     return obj
