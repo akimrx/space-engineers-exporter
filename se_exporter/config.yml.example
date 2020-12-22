@@ -1,4 +1,0 @@
-token: my-generated-token
-loglevel: info
-host: http://localhost
-port: 8080

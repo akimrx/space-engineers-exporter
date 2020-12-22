@@ -1,20 +1,21 @@
-import os
+#!/usr/bin/env python3
+"""This module contains a Config for app."""
+
 import yaml
-import logging
-
-from models.base import Base
-
-LEVELS = ("debug", "info", "warning", "error")
+from se_exporter.models.base import Base
 
 
 class Config(Base):
 
     def __init__(self, filepath: str = None):
         self.filepath = filepath
-        self.TOKEN = None
-        self.HOST = None
-        self.PORT = None
-        self.LOGLEVEL = None
+        self.token = None
+        self.host = None
+        self.port = None
+        self.listen_addr = "0.0.0.0"
+        self.listen_port = 9122
+        self.loglevel = "INFO"
+        self.run_async = False
 
         self.__build()
 
@@ -38,16 +39,5 @@ class Config(Base):
 
         for key, value in config.items():
             if key.lower() == "loglevel":
-                value = self.__convert_loglevel(value)
-            setattr(self, key.upper(), value)
-
-    def __convert_loglevel(self, level: str):
-        error_msg = "loglevel must be: debug/info/warning/error"
-        if level.lower() not in LEVELS:
-            raise ValueError(error_msg)
-
-        loglevel = getattr(logging, level.upper())
-        if not isinstance(loglevel, int):
-            raise ValueError(error_msg)
-
-        return loglevel
+                value = value.upper()
+            setattr(self, key, value)

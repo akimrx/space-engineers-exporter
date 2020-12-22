@@ -1,0 +1,10 @@
+host: http://localhost
+port: 8080
+
+token: my-generated-token
+loglevel: info
+
+listen_addr: 0.0.0.0
+listen_port: 9122
+
+run_async: true
