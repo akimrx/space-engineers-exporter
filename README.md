@@ -73,16 +73,16 @@ se-exporter -h 0.0.0.0 -p 8080 --listen-port 9122 --token "XYZQWERty123-==" --ru
 
 Metric | Type | Labels | Description
 -------|------|--------|------------
-`players_count` | gauge | | `server`, `world` | Total online players on the server
+`players_count` | gauge | `server`, `world` | Total online players on the server
 `player_ping` | gauge | `server`, `world`, `player_name`, `player_id`, `faction` | Player ping
-total_banned_players | gauge | | `server`, `world` | Total banned players on the server
-total_kicked_players | gauge | | `server`, `world` | Total kicked players on the server
+`total_banned_players` | gauge | `server`, `world` | Total banned players on the server
+`total_kicked_players` | gauge | `server`, `world` | Total kicked players on the server
 `server_is_ready` | gauge | `server`, `world` | The server is ready to connect players
 `simulation_speed` | gauge | `server`, `world` | Current world simulation speed
 `simulation_cpu_load` | gauge | `server`, `world` | Current CPU load by simulation
 `server_game_uptime_seconds` | gauge | `server`, `world` | Time during which the server is ready to play
 `total_pcu_used` | gauge | `server`, `world` | Total used PCU on the ingame world by all
-`pirate_total_pcu_used` | gauge | | `server`, `world` | Total used PCU on the ingame world by pirates
+`pirate_total_pcu_used` | gauge | `server`, `world` | Total used PCU on the ingame world by pirates
 `planets_count` | gauge | `server`, `world` | Number of planets on the game world
 `total_grids` | gauge | `server`, `world` | Number of grids on the game world
 `total_asteroids` | gauge | `server`, `world` | Number of asteroids on the game world
