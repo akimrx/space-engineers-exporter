@@ -1,0 +1,6 @@
+__version__ = "1.0.1"
+__url__ = "https://github.com/akimrx/space-engineers-exporter"
+__description__ = "Prometheus exporter for Space Engineer Server"
+__author__ = "Akim Faskhutdinov"
+__author_email__ = "akimstrong@yandex.ru"
+__license__ = "MIT"

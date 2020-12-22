@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
 import logging
 
-from client.prometheus import SpaceEngineersExporter
-from client.vrage import VRageAPI
-from utils.config import Config
+from .__version__ import __version__
+from .client.prometheus import SpaceEngineersExporter
+from .client.vrage import VRageAPI
+from .utils.config import Config
 
 parser = argparse.ArgumentParser(
     prog="space-engineers-exporter",
@@ -60,6 +62,12 @@ commands.add_argument(
     action="help",
     help="Show this help message"
 )
+commands.add_argument(
+    "--version",
+    action="version",
+    version=f"v{__version__}",
+    help="Show exporter version"
+)
 
 # Options
 options = parser.add_argument_group("Options")
@@ -110,7 +118,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        logger.info("interrupted")
+    main()

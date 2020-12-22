@@ -2,7 +2,7 @@
 """This module contains a Config for app."""
 
 import yaml
-from models.base import Base
+from se_exporter.models.base import Base
 
 
 class Config(Base):

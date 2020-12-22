@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: se-exporter
+Version: 1.0.1
+Summary: Prometheus exporter for Space Engineer Server
+Home-page: https://github.com/akimrx/space-engineers-exporter
+Author: Akim Faskhutdinov
+Author-email: akimstrong@yandex.ru
+License: MIT
+Description: UNKNOWN
+Keywords: space engineers exporter,prometheus,space engineers server
+Platform: osx
+Platform: linux
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Linux
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: Gamers
+Classifier: Topic :: System :: Monitoring
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

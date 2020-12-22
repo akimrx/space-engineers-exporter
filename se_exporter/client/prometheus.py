@@ -4,8 +4,8 @@
 import logging
 import time
 
-from client.vrage import VRageAPI
-from models.base import Base
+from se_exporter.client.vrage import VRageAPI
+from se_exporter.models.base import Base
 from prometheus_client import Summary, start_wsgi_server
 from prometheus_client.core import REGISTRY, GaugeMetricFamily
 

@@ -14,8 +14,8 @@ from wsgiref.handlers import format_date_time
 
 import aiohttp
 import requests
-from models.base import Base
-from utils.helpers import universal_obj_hook
+from se_exporter.models.base import Base
+from se_exporter.utils.helpers import universal_obj_hook
 
 logger = logging.getLogger(__name__)
 
