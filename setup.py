@@ -63,7 +63,7 @@ def main():
             "Intended Audience :: Gamers",
             "Topic :: System :: Monitoring"
         ],
-        install_requrements=requirements,
+        install_requirements=requirements,
         include_package_data=True,
         python_requires=">=3.6",
         entry_points={
