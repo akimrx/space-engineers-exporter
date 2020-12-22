@@ -1,3 +1,0 @@
-[console_scripts]
-se-exporter = se_exporter.main:main
-
