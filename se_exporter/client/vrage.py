@@ -33,18 +33,26 @@ class VRageAPI(Base):
 
     """
 
-    def __init__(
-        self,
-        host: str,
-        token: str,
-        port: int = 8080
-    ):
+    __RESOURCES__ = (
+        "session/players",
+        "session/planets",
+        "session/characters",
+        "session/grids",
+        "session/asteroids",
+        "session/floatingObjects",
+        "server",
+        "admin/bannedPlayers",
+        "admin/kickedPlayers"
+    )
 
+    def __init__(self, host: str, token: str, port: int = 8080):
         if not isinstance(host, str):
-            raise RuntimeError("Bad host format")
+            raise ValueError("Host is empty or bad format")
+        if token is None:
+            raise ValueError("Remote API key can't be empty")
 
         self.host = self.__verify_host(host)
-        self.port = port
+        self.port = port or 8080
         self.token = token
         self.basepath = "/vrageremote/v1"
         self.endpoint = f"{self.host}:{self.port}{self.basepath}"
@@ -106,8 +114,8 @@ class VRageAPI(Base):
         if resource_name in gauge:
             return {
                 resource_name: {
-                    "count": len(resources[resource_name]),
-                    "objects": resources[resource_name]
+                    "count": len(resources[resource_name])
+                    # "objects": resources[resource_name]
                 }
             }
         else:
@@ -116,7 +124,7 @@ class VRageAPI(Base):
     async def aioget_metric(self, name: str):
         url, headers = self.__prepare_request(name)
 
-        async with aiohttp.ClientSession(read_timeout=5, conn_timeout=3) as session:
+        async with aiohttp.ClientSession(read_timeout=5, conn_timeout=5) as session:
             async with session.get(url, headers=headers, raise_for_status=True) as response:
                 logger.debug(f"Request for {url} status: {response.status}")
                 try:
@@ -125,15 +133,32 @@ class VRageAPI(Base):
                     result = await response.text()
                 return self.__mapping(result)
 
-    async def metrics(self):
-        ...
+    def aiometrics(self):
+        queue = [self.aioget_metric(res) for res in self.__RESOURCES__]
+        loop = asyncio.get_event_loop()
+        metrics = loop.run_until_complete(asyncio.gather(*queue))
 
+        for metric in metrics:
+            print(metric)
+
+        loop.close()
 
     def get_metric(self, name: str):
         url, headers = self.__prepare_request(name)
 
         with requests.Session() as session:
-            response = session.get(url, headers=headers)
+            response = session.get(url, headers=headers, timeout=5)
+            logger.debug(f"Request for {url} status: {response.status_code}")
             response.raise_for_status()
 
             return self.__mapping(response.json())
+
+    def metrics(self):
+        metrics = []
+        for res in self.__RESOURCES__:
+            metrics.append(
+                self.get_metric(res)
+            )
+
+        for metric in metrics:
+            print(metric)
