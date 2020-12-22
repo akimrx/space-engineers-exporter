@@ -60,7 +60,7 @@ run_async: true
 
 * Run with config file:
 ```bash
-se-exporter --config-file /home/akimrx/config.yml
+se-exporter --config /home/akimrx/config.yml
 ```
 
 * Run with args:
