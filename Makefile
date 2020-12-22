@@ -43,8 +43,7 @@ sort:
 	isort .
 
 dist:
-	python3 setup.py sdist
-	python3 setup.py bdist_wheel
+	python3 setup.py sdist bdist_wheel
 
 release: dist
 	@make dist

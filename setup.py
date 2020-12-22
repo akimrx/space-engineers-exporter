@@ -56,11 +56,9 @@ def main():
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "License :: OSI Approved :: MIT License",
-            "Operating System :: MacOS",
-            "Operating System :: Linux",
+            "Operating System :: OS Independent",
             "Intended Audience :: Developers",
             "Intended Audience :: System Administrators",
-            "Intended Audience :: Gamers",
             "Topic :: System :: Monitoring"
         ],
         install_requires=requirements,
