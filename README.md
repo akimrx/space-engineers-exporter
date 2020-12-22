@@ -1,7 +1,6 @@
 # Python Space Engineers Prometheus Exporter
 
 [![PyPI](https://img.shields.io/pypi/v/se-exporter.svg)](https://pypi.org/project/se-exporter/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/se-exporter.svg)](https://pypi.org/project/space-engineers-exporter)
 [![License: MIT](https://img.shields.io/badge/license-MIT-%23373737.svg)](htts://github.com/akimrx/space-engineers-exporters/LICENSE)
 
 ## Installing
