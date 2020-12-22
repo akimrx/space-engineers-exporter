@@ -2,10 +2,7 @@
 """This module contains Base parent class."""
 
 import json
-import logging
 from abc import ABCMeta
-
-logger = logging.getLogger(__name__)
 
 
 class Base(object):
@@ -21,12 +18,6 @@ class Base(object):
 
     def __getitem__(self, item):
         return self.__dict__[item]
-
-    @staticmethod
-    def handle_unknown_kwargs(obj, **kwargs):
-        if kwargs:
-            logger.debug("Unparsed fields from API")
-            logger.debug(f"Type: {type(obj)}; kwargs: {kwargs}")
 
     @classmethod
     def de_json(cls, data, client: object = None):

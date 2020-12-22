@@ -9,43 +9,52 @@ import aiohttp
 import requests
 import logging
 
-from aiohttp.client_exceptions import (
-    ContentTypeError,
-)
-
 from wsgiref.handlers import format_date_time
 from datetime import datetime as dt
 from itertools import count
 from time import time, mktime
+from typing import List, Dict, Tuple, Optional
 
 from models.base import Base
+from utils.helpers import universal_obj_hook
 
 logger = logging.getLogger(__name__)
 
 
+class Metric(Base):
+    """This object represents a SE metric."""
+    def __init__(self, name: str = None, **kwargs):
+        self.name = name
+
+        for key, value in kwargs.items():
+            if isinstance(key, str):
+                setattr(self, key, value)
+
+
 class VRageAPI(Base):
-    """Asyncronous client for VRage Remote API.
+    """Сlient for VRage Remote API.
 
     Arguments:
       :host: str
       :token: str
       :port: int
+      :run_async: bool
 
     """
 
-    __RESOURCES__ = (
+    __BASE_RESOURCE__ = "server"
+    __OTHER_RESOURCES__ = (
         "session/players",
         "session/planets",
         "session/characters",
         "session/grids",
         "session/asteroids",
         "session/floatingObjects",
-        "server",
         "admin/bannedPlayers",
         "admin/kickedPlayers"
     )
 
-    def __init__(self, host: str, token: str, port: int = 8080):
+    def __init__(self, host: str, token: str, port: int = 8080, run_async: bool = False):
         if not isinstance(host, str):
             raise ValueError("Host is empty or bad format")
         if token is None:
@@ -57,18 +66,20 @@ class VRageAPI(Base):
         self.basepath = "/vrageremote/v1"
         self.endpoint = f"{self.host}:{self.port}{self.basepath}"
         self.nonce = count(int(time() * random.randint(10, 100)))
+        self.run_async = run_async
+        self.labels = {}
         logger.debug(f"VRageAPI client ready: {self}")
 
-    def __verify_host(self, host: str):
+    def __verify_host(self, host: str) -> str:
         if not host.startswith("http://"):
             return f"http://{host}"
 
-    def __date(self):
+    def __date(self) -> str:
         return format_date_time(
             mktime(dt.now().timetuple())
         )
 
-    def __hash(self, uri: str, dtime: str):
+    def __hash(self, uri: str, dtime: str) -> str:
         nonce = str(next(self.nonce))
         salt = f"{uri}\r\n{nonce}\r\n{dtime}\r\n"
         token = base64.b64decode(self.token)
@@ -84,7 +95,7 @@ class VRageAPI(Base):
 
         return result
 
-    def __prepare_request(self, path: str):
+    def __prepare_request(self, path: str) -> Tuple:
         if not path.startswith("/"):
             path = f"/{path}"
 
@@ -97,53 +108,70 @@ class VRageAPI(Base):
 
         return url, headers
 
-    def __mapping(self, data: str):
-        gauge = (
-            "Asteroids", "Grids", "Planets", "BannedPlayers",
-            "Characters", "KickedPlayers", "FloatingObjects"
-        )
-
-        if not isinstance(data, dict):
+    def __mapping(self, data: str) -> [Optional[Metric], Optional[List]]:
+        if data is None or not isinstance(data, dict):
             return
 
-        resources = data.get("data")
-        if len(resources) < 1:
-            return
+        players = []
+        for name, value in data.items():
+            if isinstance(value, list):
+                if name == "players" and len(value) > 0:
+                    for i in value:
+                        if i.get("Ping") <= 0:
+                            continue
+                        players.append(
+                            Metric(
+                                name="player_ping",
+                                value=i.get("Ping"),
+                                player_name=i.get("DisplayName"),
+                                player_id=str(i.get("SteamID")),
+                                faction=i.get("FactionName"),
+                                **self.labels
+                            )
+                        )
+                else:
+                    value = len(value)
+            elif isinstance(value, bool):
+                value = int(value)
 
-        resource_name = list(resources.keys())[0]
-        if resource_name in gauge:
-            return {
-                resource_name: {
-                    "count": len(resources[resource_name])
-                    # "objects": resources[resource_name]
-                }
-            }
-        else:
-            return resources
+        if players:
+            return players
+        return Metric(name=name, value=value, **self.labels)
 
-    async def aioget_metric(self, name: str):
+    async def aioget_metric(self, name: str) -> Dict:
         url, headers = self.__prepare_request(name)
 
         async with aiohttp.ClientSession(read_timeout=5, conn_timeout=5) as session:
             async with session.get(url, headers=headers, raise_for_status=True) as response:
                 logger.debug(f"Request for {url} status: {response.status}")
                 try:
-                    result = await response.json()
-                except ContentTypeError:
-                    result = await response.text()
-                return self.__mapping(result)
+                    res = await response.json()
+                except Exception as e:
+                    logger.error(e)
+                    return
 
-    def aiometrics(self):
-        queue = [self.aioget_metric(res) for res in self.__RESOURCES__]
-        loop = asyncio.get_event_loop()
+            result = res.get("data")
+            if name != "server":
+                return self.__mapping(universal_obj_hook(result))
+            return universal_obj_hook(result)
+
+    def aiofetch_metrics(self) -> List:
+        queue = [self.aioget_metric(res) for res in self.__OTHER_RESOURCES__]
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         metrics = loop.run_until_complete(asyncio.gather(*queue))
-
-        for metric in metrics:
-            print(metric)
-
         loop.close()
 
-    def get_metric(self, name: str):
+        rewrited_metrics = []
+        for metric in metrics:
+            if isinstance(metric, list):
+                for m in metric:
+                    rewrited_metrics.append(m)
+            else:
+                rewrited_metrics.append(metric)
+        return rewrited_metrics
+
+    def get_metric(self, name: str) -> Dict:
         url, headers = self.__prepare_request(name)
 
         with requests.Session() as session:
@@ -151,14 +179,51 @@ class VRageAPI(Base):
             logger.debug(f"Request for {url} status: {response.status_code}")
             response.raise_for_status()
 
-            return self.__mapping(response.json())
+            result = response.json().get("data")
+            if name != "server":
+                return self.__mapping(universal_obj_hook(result))
+            return universal_obj_hook(result)
 
-    def metrics(self):
+    def fetch_metrics(self) -> List:
         metrics = []
-        for res in self.__RESOURCES__:
-            metrics.append(
-                self.get_metric(res)
-            )
+        for res in self.__OTHER_RESOURCES__:
+            metric = self.get_metric(res)
+            if isinstance(metric, list):
+                for m in metric:
+                    metrics.append(m)
+            else:
+                metrics.append(metric)
+        return metrics
 
-        for metric in metrics:
-            print(metric)
+    def metrics(self) -> List:
+        """Returns a list of metrics. Each metric is a dict."""
+        metrics = []
+
+        if self.run_async:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            base_metrics = loop.run_until_complete(self.aioget_metric(self.__BASE_RESOURCE__))
+            loop.close()
+        else:
+            base_metrics = self.get_metric(self.__BASE_RESOURCE__)
+
+        common_labels = ("server_name", "world_name")
+        exclude = ("game", "server_id")
+        for k, v in base_metrics.items():
+            if k in common_labels:
+                self.labels.update({k.strip("_name"): v.lower()})
+
+        for k, v in base_metrics.items():
+            if k not in exclude and k not in common_labels:
+                metrics.append(self.__mapping({k: v}))
+
+        if self.run_async:
+            other_metrics = self.aiofetch_metrics()
+        else:
+            other_metrics = self.fetch_metrics()
+
+        for m in other_metrics:
+            if m not in metrics:
+                metrics.append(m)
+
+        return metrics
