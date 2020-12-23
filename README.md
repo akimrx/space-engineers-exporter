@@ -163,3 +163,10 @@ total_banned_players{server="se by akimrx",world="star system"} 1.0
 # TYPE total_kicked_players gauge
 total_kicked_players{server="se by akimrx",world="star system"} 2.0
 ```
+
+
+## Grafana Dashboard
+
+![](grafana/preview.png)
+
+**For more details read [this page](grafana/README.md)**
