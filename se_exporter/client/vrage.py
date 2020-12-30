@@ -120,18 +120,17 @@ class VRageAPI(Base):
             if isinstance(value, list):
                 if name == "players" and len(value) > 0:
                     for i in value:
-                        if i.get("Ping") <= 0:
-                            continue
-                        players.append(
-                            Metric(
-                                name="player_ping",
-                                value=i.get("Ping"),
-                                player_name=i.get("DisplayName"),
-                                player_id=str(i.get("SteamID")),
-                                faction=i.get("FactionName"),
-                                **self.labels
+                        if i.get("Ping") > 0:
+                            players.append(
+                                Metric(
+                                    name="player_ping",
+                                    value=i.get("Ping"),
+                                    player_name=i.get("DisplayName"),
+                                    player_id=str(i.get("SteamID")),
+                                    faction=i.get("FactionName"),
+                                    **self.labels
+                                )
                             )
-                        )
                 else:
                     value = len(value)
             elif isinstance(value, bool):

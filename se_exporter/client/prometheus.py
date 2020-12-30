@@ -107,20 +107,28 @@ class SpaceEngineersCollector(Base):
             for m in self.vrage_client.metrics():
                 if m.name not in prometheus_metrics.keys():
                     if m.name != "version":
-                        logger.info(f"Unhandled metric received, {m}")
+                        logger.debug(f"Unhandled metric received, {m}")
                     continue
 
-                pm = prometheus_metrics[m.name]
-                if m.name == "player_ping":
-                    pm.add_metric(
-                        [m.server, m.world, m.player_name, m.player_id, m.faction],
-                        m.value
-                    )
-                else:
-                    pm.add_metric(
-                        [m.server, m.world],
-                        m.value
-                    )
+                try:
+                    pm = prometheus_metrics[m.name]
+
+                    if isinstance(m.value, list):
+                        logger.debug(f"Bad metric fetched: {m}")  # because Remote API very strange :/
+
+                    elif m.name == "player_ping":
+                        pm.add_metric(
+                            [m.server, m.world, m.player_name, m.player_id, m.faction],
+                            m.value
+                        )
+
+                    else:
+                        pm.add_metric(
+                            [m.server, m.world],
+                            m.value
+                        )
+                except Exception as e:
+                    logger.error(f"The error occurred while getting metrics. {type(e).__name__} - {e}")
 
             for _, metric in prometheus_metrics.items():
                 yield metric
